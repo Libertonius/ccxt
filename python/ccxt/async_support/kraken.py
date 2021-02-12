@@ -87,7 +87,8 @@ class kraken(Exchange):
                 'api': {
                     'public': 'https://api.kraken.com',
                     'private': 'https://api.kraken.com',
-                    'zendesk': 'https://kraken.zendesk.com/api/v2/help_center/en-us/articles',  # use the public zendesk api to receive article bodies and bypass new anti-spam protections
+                    # use the public zendesk api to receive article bodies and bypass new anti-spam protections
+                    'zendesk': 'https://kraken.zendesk.com/api/v2/help_center/en-us/articles',
                 },
                 'www': 'https://www.kraken.com',
                 'doc': 'https://www.kraken.com/features/api',
@@ -230,7 +231,8 @@ class kraken(Exchange):
             },
             'commonCurrencies': {
                 'XBT': 'BTC',
-                'XBT.M': 'BTC.M',  # https://support.kraken.com/hc/en-us/articles/360039879471-What-is-Asset-S-and-Asset-M-
+                # https://support.kraken.com/hc/en-us/articles/360039879471-What-is-Asset-S-and-Asset-M-
+                'XBT.M': 'BTC.M',
                 'XDG': 'DOGE',
                 'REPV2': 'REP',
                 'REP': 'REPV1',
@@ -879,7 +881,9 @@ class kraken(Exchange):
         if limit is not None and limit != 1000:
             fetchTradesWarning = self.safe_value(self.options, 'fetchTradesWarning', True)
             if fetchTradesWarning:
-                raise ExchangeError(self.id + ' fetchTrades() cannot serve ' + str(limit) + " trades without breaking the pagination, see https://github.com/ccxt/ccxt/issues/5698 for more details. Set exchange.options['fetchTradesWarning'] to acknowledge self warning and silence it.")
+                raise ExchangeError(
+                    self.id + ' fetchTrades() cannot serve ' + str(limit) +
+                    " trades without breaking the pagination, see https://github.com/ccxt/ccxt/issues/5698 for more details. Set exchange.options['fetchTradesWarning'] to acknowledge self warning and silence it.")
         response = await self.publicGetTrades(self.extend(request, params))
         #
         #     {
@@ -944,7 +948,9 @@ class kraken(Exchange):
         elif (type == 'stop-loss') or (type == 'take-profit'):
             stopPrice = self.safe_float_2(params, 'price', 'stopPrice', price)
             if stopPrice is None:
-                raise ArgumentsRequired(self.id + ' createOrder() requires a price argument or a price/stopPrice parameter for a ' + type + ' order')
+                raise ArgumentsRequired(
+                    self.id + ' createOrder() requires a price argument or a price/stopPrice parameter for a ' + type +
+                    ' order')
             else:
                 request['price'] = self.price_to_precision(symbol, stopPrice)
         elif (type == 'stop-loss-limit') or (type == 'take-profit-limit'):
@@ -956,7 +962,8 @@ class kraken(Exchange):
                 request['price'] = self.price_to_precision(symbol, stopPrice)
                 request['price2'] = self.price_to_precision(symbol, limitPrice)
             elif (price is None) or (not(stopPriceDefined or limitPriceDefined)):
-                raise ArgumentsRequired(self.id + ' createOrder() requires a price argument and/or price/stopPrice/price2 parameters for a ' + type + ' order')
+                raise ArgumentsRequired(
+                    self.id + ' createOrder() requires a price argument and/or price/stopPrice/price2 parameters for a ' + type + ' order')
             else:
                 if stopPriceDefined:
                     request['price'] = self.price_to_precision(symbol, stopPrice)
@@ -1185,7 +1192,9 @@ class kraken(Exchange):
         orderTrades = self.safe_value(params, 'trades')
         tradeIds = []
         if orderTrades is None:
-            raise ArgumentsRequired(self.id + " fetchOrderTrades() requires a unified order structure in the params argument or a 'trades' param(an array of trade id strings)")
+            raise ArgumentsRequired(
+                self.id +
+                " fetchOrderTrades() requires a unified order structure in the params argument or a 'trades' param(an array of trade id strings)")
         else:
             for i in range(0, len(orderTrades)):
                 orderTrade = orderTrades[i]
@@ -1196,9 +1205,9 @@ class kraken(Exchange):
         await self.load_markets()
         options = self.safe_value(self.options, 'fetchOrderTrades', {})
         batchSize = self.safe_integer(options, 'batchSize', 20)
-        numBatches = int(tradeIds / batchSize)
-        numBatches = self.sum(numBatches, 1)
         numTradeIds = len(tradeIds)
+        numBatches = int(numTradeIds / batchSize)
+        numBatches = self.sum(numBatches, 1)
         result = []
         for j in range(0, numBatches):
             requestIds = []
@@ -1561,7 +1570,10 @@ class kraken(Exchange):
                     self.options['depositMethods'][code] = await self.fetch_deposit_methods(code)
                 method = self.options['depositMethods'][code][0]['method']
             else:
-                raise ArgumentsRequired(self.id + ' fetchDepositAddress() requires an extra `method` parameter. Use fetchDepositMethods("' + code + '") to get a list of available deposit methods or enable the exchange property .options["cacheDepositMethodsOnFetchDepositAddress"] = True')
+                raise ArgumentsRequired(
+                    self.id + ' fetchDepositAddress() requires an extra `method` parameter. Use fetchDepositMethods("' +
+                    code +
+                    '") to get a list of available deposit methods or enable the exchange property .options["cacheDepositMethodsOnFetchDepositAddress"] = True')
         request = {
             'asset': currency['id'],
             'method': method,
@@ -1596,7 +1608,8 @@ class kraken(Exchange):
                 'info': response,
                 'id': response['result'],
             }
-        raise ExchangeError(self.id + " withdraw() requires a 'key' parameter(withdrawal key name, as set up on your account)")
+        raise ExchangeError(
+            self.id + " withdraw() requires a 'key' parameter(withdrawal key name, as set up on your account)")
 
     async def fetch_positions(self, symbols=None, since=None, limit=None, params={}):
         await self.load_markets()
